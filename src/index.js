@@ -8,21 +8,6 @@ const taskRouter = require('./routers/task');
 const app = express();
 const port = process.env.PORT || 3000;
 
-app.use((req,res,next)=> {
-    if(req.method){
-        return res.status(503).send("CURRENTLY UNDER CONSTRUCTION. PLEASE FFFTTTTSSSEKKK")
-    }
-    next();
-});
-
-app.use((req,res,next)=> {
-    if(req.method==="GET"){
-        return res.send("IXNAY")
-    }
-    next();
-});
-
-
 app.use(express.json());
 app.use(userRouter);
 app.use(taskRouter);
