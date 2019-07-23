@@ -9,18 +9,39 @@ router.post('/tasks', auth ,async (req,res) => {
             ...req.body,
             owner : req.user._id
         })
-        res.send(task);
         await task.save();
-        res.status(201).send();
+        res.status(201).send(task);
     }catch(e){
         res.status(500).send("OOPS"); 
     }
 })
 
+//GET /tasks?completed = true
+//GET /tasks?limit=3&skip=3
+//GET /tasks?sortBy = completed_true
 router.get('/tasks',auth,async (req,res)=>{
+    const match = {}
+    const sort = {}
+    if(req.query.completed){
+        match.completed = req.query.completed === 'true'
+    }
+
+    if(req.query.sortBy){
+        const parts = req.query.sortBy.split('_')
+        sort[parts[0]] = parts[1] === 'desc' ? -1:1 
+    }
     try{
-        var tasks = await Task.find({owner: req.user._id});
-        res.status(200).send(tasks);
+        //var tasks = await Task.find({owner: req.user._id});
+        await req.user.populate({
+            path : 'tasks',
+            match : match,
+            options : {
+                limit : parseInt(req.query.limit),
+                skip : parseInt(req.query.skip),
+                sort : sort
+            }
+        }).execPopulate()
+        res.status(200).send(req.user.tasks);
     }catch(e){
         res.status(500).send(e);
     }
