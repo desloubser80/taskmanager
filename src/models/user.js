@@ -3,6 +3,7 @@ const validator = require('validator');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const Task = require('./task');
+const {sendFarewellEmail} = require('../emails/account')
 
 
 const userSchema = new mongoose.Schema({
@@ -81,7 +82,7 @@ userSchema.methods.toJSON = function () {
 
 userSchema.methods.generateAuthToken = async function () {
     const user = this;
-    const token = jwt.sign({_id: user._id.toString()},'thisismynewcourse');
+    const token = jwt.sign({_id: user._id.toString()},process.env.JWT_SECRET);
     user.tokens = user.tokens.concat({token});
     await user.save();
     return token;
@@ -112,7 +113,8 @@ userSchema.pre('save', async function (next) {
 
 userSchema.pre('remove', async function (next) {
     const user = this
-    await Task.deleteMany({owner : user._id})
+    await Task.deleteMany({owner : user._id});
+    sendFarewellEmail(user.email,user.name);
     next()
 })
 

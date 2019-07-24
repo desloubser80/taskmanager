@@ -3,7 +3,7 @@ const User = require ('../models/user');
 const auth = async (req,res,next)=>{
     try{
         var token = req.header('Authorization').replace('Bearer ','');
-        var isValidToken = jwt.verify(token,'thisismynewcourse')
+        var isValidToken = jwt.verify(token,process.env.JWT_SECRET)
         const user = await User.findOne({ _id : isValidToken._id, 'tokens.token': token })
         if(!user){
             throw new Error();
